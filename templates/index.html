@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ExamFlow | Smart Exam Scheduler</title>
+
+<style>
+:root {
+    --navy: #14213d;
+    --blue: #4361ee;
+    --bg: #f4f7fc;
+    --text: #202b42;
+    --muted: #718096;
+    --border: #e4e9f2;
+    --green: #16875d;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 22px; }
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+.layout {
+    display: grid;
+    grid-template-columns: 235px minmax(0, 1fr);
+    min-height: 100vh;
+}
+aside {
+    background: var(--navy);
+    color: white;
+    padding: 28px 18px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+}
+.brand { font-size: 25px; font-weight: 800; }
+.brand span { color: #91a7ff; }
+.tagline { color: #bdc8dc; font-size: 12px; line-height: 1.7; margin-top: 8px; }
+.nav-label {
+    margin: 38px 10px 12px;
+    color: #aab9d1;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+}
+.nav-item {
+    display: block;
+    color: #e7ecf8;
+    text-decoration: none;
+    margin: 7px 0;
+    padding: 13px 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: background .2s;
+}
+.nav-item:hover, .nav-item:focus {
+    background: #30446b;
+    color: white;
+}
+.nav-item.active { background: var(--blue); color: white; }
+main { min-width: 0; padding: 30px; }
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 25px;
+}
+h1 { font-size: 28px; margin: 0; }
+h2 { font-size: 19px; margin: 0 0 10px; }
+h3 { font-size: 16px; margin: 0 0 10px; }
+p { line-height: 1.6; }
+.muted { color: var(--muted); font-size: 13px; }
+.pill {
+    background: #e0f5eb; color: #13734f;
+    padding: 8px 12px; border-radius: 30px;
+    font-size: 12px; font-weight: 700;
+}
+.panel {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 23px;
+    margin-bottom: 22px;
+    box-shadow: 0 4px 18px #192d5508;
+    scroll-margin-top: 22px;
+}
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+.field.full { grid-column: 1 / -1; }
+label {
+    display: block; font-size: 13px;
+    font-weight: 700; margin-bottom: 8px;
+}
+input {
+    width: 100%; padding: 12px;
+    border: 1px solid #d6deeb; border-radius: 9px;
+    font-size: 14px; background: white; color: var(--text);
+}
+input:focus {
+    outline: 2px solid #4361ee30; border-color: var(--blue);
+}
+.help { font-size: 12px; color: var(--muted); margin-top: 7px; line-height: 1.5; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+button, .download {
+    display: inline-block; border: 0; border-radius: 9px;
+    padding: 12px 17px; font-weight: 700;
+    cursor: pointer; text-decoration: none; font-size: 13px;
+}
+button { background: var(--blue); color: white; }
+button:hover, .download:hover { opacity: .86; }
+.download { background: #eaf0ff; color: #304cc1; }
+.error {
+    border: 1px solid #ffcaca; background: #fff1f1;
+    color: #a32121; padding: 14px; border-radius: 10px;
+    margin-bottom: 20px;
+}
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px; margin-bottom: 22px;
+}
+.stat {
+    background: white; border: 1px solid var(--border);
+    border-radius: 14px; padding: 19px; min-width: 0;
+}
+.stat-label { color: var(--muted); font-size: 12px; }
+.stat-value { font-size: 27px; font-weight: 800; margin-top: 9px; overflow-wrap: anywhere; }
+.timetable {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+.slot {
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px;
+    border-top: 4px solid var(--slot-color);
+    background: white;
+}
+.slot-head { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.slot-name { font-weight: 800; }
+.count {
+    background: #edf1f8; color: #52617a;
+    padding: 5px 8px; border-radius: 20px; font-size: 11px;
+}
+.courses { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.course {
+    padding: 9px 12px; border-radius: 8px;
+    background: var(--course-bg); color: var(--course-text);
+    font-weight: 800; font-size: 13px;
+}
+.empty { color: var(--muted); font-size: 13px; padding: 15px 0; }
+.comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.comparison-item { padding: 18px; background: #f7f9fd; border-radius: 12px; }
+.comparison-item strong { display: block; font-size: 25px; margin: 8px 0; }
+.status {
+    display: inline-block; background: #e0f5eb; color: var(--green);
+    border-radius: 8px; padding: 10px 13px; margin-top: 15px;
+    font-size: 13px; font-weight: 700;
+}
+.status.invalid { background: #fff1f1; color: #a32121; }
+.section-heading { margin-bottom: 17px; }
+.section-heading p { margin-bottom: 0; }
+.info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.info-card { background: #f7f9fd; padding: 17px; border-radius: 12px; }
+footer { color: var(--muted); font-size: 12px; padding: 12px 0 25px; text-align: center; }
+
+@media (max-width: 1000px) {
+    .layout { grid-template-columns: 190px minmax(0, 1fr); }
+    main { padding: 20px; }
+    .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 700px) {
+    .layout { grid-template-columns: 1fr; }
+    aside { position: static; height: auto; padding: 18px; }
+    .nav-label { margin-top: 20px; }
+    .nav-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; }
+    main { padding: 15px; }
+    .form-grid, .timetable, .comparison, .info-grid { grid-template-columns: 1fr; }
+    .field.full { grid-column: auto; }
+}
+</style>
+</head>
+
+<body>
+<div class="layout">
+<aside>
+    <div class="brand">Exam<span>Flow</span></div>
+    <div class="tagline">Smart exam scheduling<br>Conflict-free planning</div>
+
+    <div class="nav-label">WORKSPACE</div>
+    <nav class="nav-list" aria-label="Main navigation">
+        <a class="nav-item active" href="#dashboard">▦ &nbsp; Dashboard</a>
+        <a class="nav-item" href="#timetable">▤ &nbsp; Timetable</a>
+        <a class="nav-item" href="#validation">✓ &nbsp; Validation</a>
+        <a class="nav-item" href="#algorithm-analysis">↗ &nbsp; Algorithm analysis</a>
+    </nav>
+</aside>
+
+<main>
+    <header class="topbar" id="dashboard">
+        <div>
+            <h1>Exam Scheduler</h1>
+            <p class="muted">Plan, optimize and validate your examination timetable.</p>
+        </div>
+        <div class="pill">● Scheduling workspace</div>
+    </header>
+
+    {% if error %}
+    <div class="error" role="alert"><strong>Input error:</strong> {{ error }}</div>
+    {% endif %}
+
+    <section class="panel">
+        <div class="section-heading">
+            <h2>Schedule configuration</h2>
+            <p class="muted">Enter courses, conflict pairs and maximum slot capacity.</p>
+        </div>
+
+        <form method="POST" action="#timetable">
+            <div class="form-grid">
+                <div class="field full">
+                    <label for="courses">Course names</label>
+                    <input id="courses" name="courses" value="{{ courses_text }}" required>
+                    <div class="help">Separate course names with commas. Example: A,B,C,D,E</div>
+                </div>
+
+                <div class="field full">
+                    <label for="conflicts">Conflict pairs</label>
+                    <input id="conflicts" name="conflicts" value="{{ conflicts_text }}">
+                    <div class="help">Example: A-B,A-C,C-D. A and B cannot have exams in the same slot.</div>
+                </div>
+
+                <div class="field">
+                    <label for="capacity">Maximum exams per slot (R)</label>
+                    <input id="capacity" name="capacity" type="number" min="1"
+                           value="{{ capacity_text }}" required>
+                    <div class="help">The maximum number of courses allowed in one slot.</div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button type="submit">Generate optimal timetable →</button>
+                <a class="download" href="/">Reset / New schedule</a>
+            </div>
+        </form>
+    </section>
+
+    <section id="timetable" class="panel">
+        <div class="section-heading">
+            <h2>Optimized timetable</h2>
+            <p class="muted">Your generated exam slots appear here.</p>
+        </div>
+
+        {% if result %}
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-label">Total courses</div>
+                <div class="stat-value">{{ result.course_count }}</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Conflict pairs</div>
+                <div class="stat-value">{{ result.conflict_count }}</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Minimum slots</div>
+                <div class="stat-value">{{ result.exact_count }}</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Slot capacity</div>
+                <div class="stat-value">{{ result.capacity }}</div>
+            </div>
+        </div>
+
+        {% set palette = ['#4361ee','#16a085','#f59e0b','#9333ea','#e05263','#0891b2','#64748b','#65a30d'] %}
+
+        <div class="timetable">
+            {% for slot in result.exact_slots %}
+            <div class="slot" style="--slot-color: {{ palette[loop.index0 % 8] }}">
+                <div class="slot-head">
+                    <span class="slot-name">{{ slot.name }}</span>
+                    <span class="count">{{ slot.count }}/{{ slot.capacity }} exams</span>
+                </div>
+                <div class="courses">
+                    {% for course in slot.courses %}
+                    <span class="course"
+                          style="--course-bg: {{ palette[loop.index0 % 8] }}18; --course-text: {{ palette[loop.index0 % 8] }}">
+                        {{ course }}
+                    </span>
+                    {% endfor %}
+                </div>
+                {% if not slot.courses %}
+                <div class="empty">No exams assigned.</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="actions">
+            <a class="download" href="/download">↓ Download timetable CSV</a>
+        </div>
+        {% else %}
+        <div class="empty">No timetable generated yet. Complete the form above and click Generate optimal timetable.</div>
+        {% endif %}
+    </section>
+
+    <section id="validation" class="panel">
+        <div class="section-heading">
+            <h2>Timetable validation</h2>
+            <p class="muted">Checks that the generated schedule follows the rules.</p>
+        </div>
+
+        {% if result %}
+            <div class="status {% if not result.valid %}invalid{% endif %}">
+                {% if result.valid %}✓{% else %}✕{% endif %}
+                {{ result.message }}
+            </div>
+            <div class="info-grid" style="margin-top:18px">
+                <div class="info-card">
+                    <h3>Conflict check</h3>
+                    <p class="muted">No conflicting courses share a slot when validation passes.</p>
+                </div>
+                <div class="info-card">
+                    <h3>Capacity check</h3>
+                    <p class="muted">Each slot contains no more than {{ result.capacity }} courses.</p>
+                </div>
+                <div class="info-card">
+                    <h3>Course coverage</h3>
+                    <p class="muted">{{ result.course_count }} courses included in the generated schedule.</p>
+                </div>
+            </div>
+        {% else %}
+            <div class="empty">Validation results will appear here after you generate a timetable.</div>
+        {% endif %}
+    </section>
+
+    <section id="algorithm-analysis" class="panel">
+        <div class="section-heading">
+            <h2>Algorithm analysis</h2>
+            <p class="muted">Compare a fast greedy strategy with an exact search.</p>
+        </div>
+
+        {% if result %}
+        <div class="comparison">
+            <div class="comparison-item">
+                <div class="muted">Greedy DSatur</div>
+                <strong>{{ result.greedy_count }} slots</strong>
+                <div class="help">Execution time: {{ result.greedy_time }} seconds</div>
+                <p class="muted">Chooses the unassigned course with the greatest saturation, then degree.</p>
+            </div>
+            <div class="comparison-item">
+                <div class="muted">Exact backtracking</div>
+                <strong>{{ result.exact_count }} slots</strong>
+                <div class="help">Execution time: {{ result.exact_time }} seconds</div>
+                <p class="muted">Searches increasing slot limits to find a minimum-slot solution for these constraints.</p>
+            </div>
+        </div>
+        <div class="status">
+            {{ "Greedy solution is optimal for this input." if result.greedy_optimal else "Exact search found a schedule using fewer slots." }}
+        </div>
+        {% else %}
+        <div class="info-grid">
+            <div class="info-card">
+                <h3>DSatur greedy</h3>
+                <p class="muted">Quickly builds a valid schedule using saturation and degree.</p>
+            </div>
+            <div class="info-card">
+                <h3>Exact search</h3>
+                <p class="muted">Tests slot limits with backtracking to seek the minimum.</p>
+            </div>
+            <div class="info-card">
+                <h3>Runtime comparison</h3>
+                <p class="muted">Execution times will appear here after scheduling.</p>
+            </div>
+        </div>
+        {% endif %}
+    </section>
+
+    <footer>ExamFlow · Graph coloring · DSatur · Exact backtracking</footer>
+</main>
+</div>
+
+<script>
+const navLinks = document.querySelectorAll(".nav-item");
+
+navLinks.forEach(link => {
+    link.addEventListener("click", () => {
+        navLinks.forEach(item => item.classList.remove("active"));
+        link.classList.add("active");
+    });
+});
+</script>
+</body>
+</html>
